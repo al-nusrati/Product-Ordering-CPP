@@ -17,7 +17,7 @@ public:
     class ProductNotFoundException {};      // product code is wrong
     class InsufficientStockException {};    // product quantity is exceeding
     class InvalidQuantityException {};      // product quantity is negative
-    class ExcessiveCancellationException {};    // 
+    class ExcessiveCancellationException {};    // cancelation quantity of product is less than products itself
 
     OrderingSystem() {
         productCount = 0;
@@ -159,14 +159,21 @@ int main() {
         Osystem.viewAllProducts();
     }
     catch (OrderingSystem::ProductNotFoundException) {
-        cout << "Exception: Product not found!" << endl;
+        cout << "Exception: Product not found!" << endl;        
     }
+
+
+
+    //==============================================
+
+
+
 
     cout << "\nPlacing order for wrong product id: " << endl;
     try {
         Osystem.placeOrder(999, 1);
     }
-    catch (OrderingSystem::ProductNotFoundException) {
+    catch (OrderingSystem::ProductNotFoundException) {              //<----
         cout << "Exception: Product not found!" << endl;
     }
     catch (OrderingSystem::InsufficientStockException) {
