@@ -13,13 +13,12 @@ private:
     int productCount;
 
 public:
-    // Exception classes
-    class ProductNotFound {};
-    class InsufficientStock {};
-    class InvalidQuantity {};
-    class ExcessiveCancellation {};
 
-    // Constructor
+    class ProductNotFoundException {};      // product code is wrong
+    class InsufficientStockException {};    // product quantity is exceeding
+    class InvalidQuantityException {};      // product quantity is negative
+    class ExcessiveCancellationException {};    // 
+
     OrderingSystem() {
         productCount = 0;
         for (int i = 0; i < MAX_PRODUCTS; i++) {
@@ -31,7 +30,6 @@ public:
         }
     }
 
-    // Add product
     void addProduct(int id, string name, double pr, int qty) {
         if (productCount < MAX_PRODUCTS) {
             productID[productCount] = id;
@@ -43,24 +41,22 @@ public:
         }
     }
 
-    // Find product index
     int findProductIndex(int id) {
         for (int i = 0; i < productCount; i++) {
             if (productID[i] == id)
                 return i;
         }
-        throw ProductNotFound();
+        throw ProductNotFoundException();
     }
 
-    // Place an order
     void placeOrder(int id, int quantity) {
         int index = findProductIndex(id);
 
         if (quantity <= 0)
-            throw InvalidQuantity();
+            throw InvalidQuantityException();
 
         if (quantity > availableQuantity[index])
-            throw InsufficientStock();
+            throw InsufficientStockException();
 
         availableQuantity[index] -= quantity;
         orderedQuantity[index] += quantity;
@@ -68,16 +64,15 @@ public:
         cout << "Order placed successfully!" << endl;
         cout << "Product: " << productName[index] << endl;
         cout << "Quantity ordered: " << quantity << endl;
-        cout << "Total price: $" << (price[index] * quantity) << endl;
+        cout << "Total price: PKR" << (price[index] * quantity) << endl;
         cout << "Remaining stock: " << availableQuantity[index] << endl;
     }
 
-    // Cancel an order
     void cancelOrder(int id, int quantity) {
         int index = findProductIndex(id);
 
         if (quantity > orderedQuantity[index])
-            throw ExcessiveCancellation();
+            throw ExcessiveCancellationException();
 
         availableQuantity[index] += quantity;
         orderedQuantity[index] -= quantity;
@@ -88,13 +83,11 @@ public:
         cout << "Updated stock: " << availableQuantity[index] << endl;
     }
 
-    // View all products
     void viewAllProducts() {
-        cout << "\n=== All Products ===" << endl;
         for (int i = 0; i < productCount; i++) {
             cout << "\nProduct ID: " << productID[i] << endl;
             cout << "Name: " << productName[i] << endl;
-            cout << "Price: $" << price[i] << endl;
+            cout << "Price: " << price[i] << endl;
             cout << "Available Quantity: " << availableQuantity[i] << endl;
             cout << "Ordered Quantity: " << orderedQuantity[i] << endl;
         }
@@ -102,95 +95,87 @@ public:
 };
 
 int main() {
-    OrderingSystem system;
+    OrderingSystem Osystem;
 
-    // Add products to system
-    system.addProduct(101, "Laptop", 999.99, 10);
-    system.addProduct(102, "Mouse", 25.50, 50);
-    system.addProduct(103, "Keyboard", 75.00, 30);
+    Osystem.addProduct(101, "Laptop", 900, 10);
+    Osystem.addProduct(102, "Mouse", 125, 50);
+    Osystem.addProduct(103, "Keyboard", 400, 30);
 
-    cout << "=== Online Product Ordering System ===" << endl;
-
-    // Test 1: Place valid order
-    cout << "\n--- Test 1: Place order for 2 Laptops (ID: 101) ---" << endl;
+    cout << "\nPlacing a valid order: " << endl;
     try {
-        system.placeOrder(101, 2);
+        Osystem.placeOrder(101, 2);                              // <---
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
-    catch (OrderingSystem::InsufficientStock) {
+    catch (OrderingSystem::InsufficientStockException) {
         cout << "Exception: Insufficient stock!" << endl;
     }
-    catch (OrderingSystem::InvalidQuantity) {
+    catch (OrderingSystem::InvalidQuantityException) {
         cout << "Exception: Invalid quantity! Must be positive." << endl;
     }
 
-    // Test 2: Place order exceeding available quantity
-    cout << "\n--- Test 2: Place order for 20 Laptops (ID: 101) ---" << endl;
+    cout << "\nPlacing order for exceeding quantity: " << endl;
     try {
-        system.placeOrder(101, 20);
+        Osystem.placeOrder(101, 20);
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
-    catch (OrderingSystem::InsufficientStock) {
+    catch (OrderingSystem::InsufficientStockException) {        // <---
         cout << "Exception: Insufficient stock!" << endl;
     }
-    catch (OrderingSystem::InvalidQuantity) {
+    catch (OrderingSystem::InvalidQuantityException) {
         cout << "Exception: Invalid quantity! Must be positive." << endl;
     }
 
-    // Test 3: Place order with zero quantity
-    cout << "\n--- Test 3: Place order for 0 Mice (ID: 102) ---" << endl;
+    cout << "\nPlacing order with 0 quantity: " << endl;
     try {
-        system.placeOrder(102, 0);
+        Osystem.placeOrder(102, 0);
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
-    catch (OrderingSystem::InsufficientStock) {
+    catch (OrderingSystem::InsufficientStockException) {
         cout << "Exception: Insufficient stock!" << endl;
     }
-    catch (OrderingSystem::InvalidQuantity) {
+    catch (OrderingSystem::InvalidQuantityException) {                      // <---
         cout << "Exception: Invalid quantity! Must be positive." << endl;
     }
 
-    // Test 4: Cancel more than ordered quantity
-    cout << "\n--- Test 4: Cancel 5 Laptops (only 2 were ordered) ---" << endl;
+    cout << "\nCancelling 5 Laptops when only 2 were ordered: " << endl;
     try {
-        system.cancelOrder(101, 5);
+        Osystem.cancelOrder(101, 5);
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
-    catch (OrderingSystem::ExcessiveCancellation) {
-        cout << "Exception: Cannot cancel more than ordered quantity!" << endl;
+    catch (OrderingSystem::ExcessiveCancellationException) {                        // <---
+        cout << "Exception: Cannot cancel more than ordered quantity!" << endl;         
     }
 
-    // Test 5: View product details
-    cout << "\n--- Test 5: View details of all products ---" << endl;
+    cout << "\nViewing details of all orders: " << endl;
     try {
-        system.viewAllProducts();
+        Osystem.viewAllProducts();
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
 
-    // Test 6: Try to access non-existent product
-    cout << "\n--- Test 6: Place order for non-existent product (ID: 999) ---" << endl;
+    cout << "\nPlacing order for wrong product id: " << endl;
     try {
-        system.placeOrder(999, 1);
+        Osystem.placeOrder(999, 1);
     }
-    catch (OrderingSystem::ProductNotFound) {
+    catch (OrderingSystem::ProductNotFoundException) {
         cout << "Exception: Product not found!" << endl;
     }
-    catch (OrderingSystem::InsufficientStock) {
+    catch (OrderingSystem::InsufficientStockException) {
         cout << "Exception: Insufficient stock!" << endl;
     }
-    catch (OrderingSystem::InvalidQuantity) {
+    catch (OrderingSystem::InvalidQuantityException) {
         cout << "Exception: Invalid quantity! Must be positive." << endl;
     }
 
+    system("pause>0");
     return 0;
 }
